@@ -6,37 +6,37 @@ import { Link } from "react-router-dom";
 import useFetch from "./useFetch";
 
 const Beers = () => {
-  // const [beers, setBeers] = useState([]);
-  // const [isLoading, setIsLoading] = useState(true);
-
-  // useEffect(() => {
-  //   const fetchBeers = async () => {
-  //     const response = await axios.get(
-  //       'https://ih-beers-api2.herokuapp.com/beers'
-  //     );
-
-  //     setBeers(response.data);
-  //     setIsLoading(false);
-
-  //     try {
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  //   };
-  //   fetchBeers();
-  // }, []);
+  const [query, setQuery] = useState("");
+  const [filteredBeers, setFilteredBeers] = useState([]);
 
   const { data: beers, isLoading } = useFetch(
     "https://ih-beers-api2.herokuapp.com/beers"
   );
 
+  useEffect(() => {
+    if (beers) {
+      const search = beers.filter((beer) => {
+        return beer.name.toLowerCase().includes(query.toLowerCase());
+      });
+      setFilteredBeers(search);
+    }
+  }, [beers, query]);
+
+  const handleSearch = (e) => {
+    setQuery(e.target.value);
+  };
+
   return (
     <div className="container">
       <Navbar />
       {isLoading && <Spinner />}
+      <br />
+      <input onChange={handleSearch} type="text" placeholder="Search beer..." />
+
+      <br />
       <h1>All Beers</h1>
-      {beers &&
-        beers.map((beer) => (
+      {filteredBeers.length > 0 ? (
+        filteredBeers.map((beer) => (
           <div key={beer._id}>
             <Link to={`/beers/${beer._id}`}>
               <img src={beer.image_url} height={"250px"} alt="" />
@@ -46,15 +46,17 @@ const Beers = () => {
               <i>{beer.tagline} </i>
             </p>
             <p>
-              {" "}
               <strong>Created by: </strong>
-              {beer.contributed_by}{" "}
+              {beer.contributed_by}
             </p>
             <br />
             <hr />
             <br />
           </div>
-        ))}
+        ))
+      ) : (
+        <p>No beers found.</p>
+      )}
     </div>
   );
 };
